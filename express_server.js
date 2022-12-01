@@ -17,22 +17,48 @@ const generateRandomString = (num) => {
   return ranStr;
 };
 
-generateRandomString(6);
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
+// POSTS ---------------------------------------------
 
+// logs user in
 app.post("/login", (req, res) => {
-  console.log(req.body.username);
   res.cookie('username', req.body.username);
   res.redirect("/urls");
 });
+
+// logs user out
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
+  res.redirect("/urls");
+});
+
+// creates new shorted url and adds to db
+app.post("/urls", (req, res) => {
+  const id = generateRandomString(6);
+  urlDatabase[id] = req.body.longURL;
+  res.redirect(`/urls/${id}`);
+});
+
+// edits an existing longURL
+app.post("/urls/:id/edit", (req, res) => {
+  const id = req.params.id;
+  urlDatabase[id] = req.body.longURL;
+  res.redirect(`/urls/${id}`);
+});
+
+// deletes existing shortened url
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[(req.params.id)];
+  res.redirect("/urls");
+});
+
+
+// GETS --------------------------------------------
+
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -44,12 +70,6 @@ app.get("/urls", (req, res) => {
     username: req.cookies["username"],
   };
   res.render('urls_index', templateVars);
-});
-
-app.post("/urls", (req, res) => {
-  const id = generateRandomString(6);
-  urlDatabase[id] = req.body.longURL;
-  res.redirect(`/urls/${id}`);
 });
 
 app.get("/urls/new", (req, res) => {
@@ -66,17 +86,6 @@ app.get("/urls/:id", (req, res) => {
     username: req.cookies["username"]
   };
   res.render("urls_show", templateVars);
-});
-
-app.post("/urls/:id/edit", (req, res) => {
-  const id = req.params.id;
-  urlDatabase[id] = req.body.longURL;
-  res.redirect(`/urls/${id}`);
-});
-
-app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[(req.params.id)];
-  res.redirect("/urls");
 });
 
 app.get("/u/:id", (req, res) => {
