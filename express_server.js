@@ -92,9 +92,13 @@ app.post("/register", (req, res) => {
 
 // creates new shorted url and adds to db
 app.post("/urls", (req, res) => {
-  const id = generateRandomString(6);
+  const userId = req.cookies["user_id"];
+  if (!userId) {
+    res.status(403).send("Unregistered users are not permitted to shorten urls.");
+  } else { const id = generateRandomString(6);
   urlDatabase[id] = req.body.longURL;
   res.redirect(`/urls/${id}`);
+  }
 });
 
 // edits an existing longURL
@@ -153,6 +157,9 @@ app.get("/login", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const userId = req.cookies["user_id"];
+  if (!userId) {
+    res.redirect("/login");
+  }
   let templateVars = {
     user: users[userId]
   };
