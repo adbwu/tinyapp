@@ -67,7 +67,7 @@ app.post("/login", (req, res) => {
 // logs user out
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 // user registration
