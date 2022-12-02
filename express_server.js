@@ -35,6 +35,17 @@ const users = {
   },
 };
 
+// returns whether or not email already exists in usersDb
+const doesEmailExist = (email) => {
+  let usersArr = Object.entries(users);
+  for (const user of usersArr) {
+    if (user[1].email === email) {
+      return true;
+    }
+  }
+  return false;
+};
+
 // POSTS ---------------------------------------------
 
 // logs user in
@@ -45,26 +56,27 @@ app.post("/login", (req, res) => {
 
 // logs user out
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
 // user registration
 app.post("/register", (req, res) => {
-  //create user id
   const email = req.body.email;
   const password = req.body.password;
   const userId = "user" + generateRandomString(6);
-  //add user to user database
+  if (email === "" || password === "") {
+    res.status(400).send("Email or password field left blank. Please go back and try again");
+  } else if (doesEmailExist(email)) {
+    res.status(400).send("Email already exists. Please go back and try again");
+  }
   users[userId] = {
     "id": userId,
     "email": email,
     "password": password
   };
-  //add coookies
   res.cookie('user_id', userId);
   res.redirect("/urls");
-  console.log(users);
 });
 
 
@@ -103,7 +115,6 @@ app.get("/urls", (req, res) => {
     user: users[userId]
   };
   res.render('urls_index', templateVars);
-  console.log(users);
 });
 
 app.get("/registration", (req, res) => {
