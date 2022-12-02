@@ -56,7 +56,7 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   const userId = "user" + generateRandomString(6);
   //add user to user database
-  users.userId = {
+  users[userId] = {
     "id": userId,
     "email": email,
     "password": password
@@ -64,6 +64,7 @@ app.post("/register", (req, res) => {
   //add coookies
   res.cookie('user_id', userId);
   res.redirect("/urls");
+  console.log(users);
 });
 
 
@@ -102,6 +103,7 @@ app.get("/urls", (req, res) => {
     user: users[userId]
   };
   res.render('urls_index', templateVars);
+  console.log(users);
 });
 
 app.get("/registration", (req, res) => {
