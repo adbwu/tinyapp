@@ -40,7 +40,7 @@ const getUserByEmail = (email) => {
   let usersArr = Object.entries(users);
   for (const user of usersArr) {
     if (user[1].email === email) {
-      return user;
+      return users[user[0]];
     }
   }
   return false;
@@ -52,19 +52,16 @@ const getUserByEmail = (email) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  let checkAcc = getUserByEmail(email);
-  if (email === "" || password === "") {
-    res.status(400).send("Email or password field left blank. Please go back and try again");
-  } else if (doesEmailExist(email)) {
-    res.status(400).send("Email already exists. Please go back and try again");
+  if (getUserByEmail(email) === false) {
+    res.status(403).send("An account associated with that email does not exist. Please go back and try again.");
   }
-  users[userId] = {
-    "id": userId,
-    "email": email,
-    "password": password
-  };
-  res.cookie('user_id', userId);
-  res.redirect("/urls");
+  let checkAcc = getUserByEmail(email);
+  if (email === checkAcc.email && password === checkAcc.password) {
+    res.cookie('user_id', checkAcc.id);
+    res.redirect("/urls");
+  } else {
+    res.status(403).send("Email and password do not match. Please go back and try again.");
+  }
 });
 
 // logs user out
@@ -79,9 +76,9 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   const userId = "user" + generateRandomString(6);
   if (email === "" || password === "") {
-    res.status(400).send("Email or password field left blank. Please go back and try again");
+    res.status(400).send("Email or password field left blank. Please go back and try again.");
   } else if (getUserByEmail(email) !== false) {
-    res.status(400).send("Email already exists. Please go back and try again");
+    res.status(400).send("Email already exists. Please go back and try again.");
   }
   users[userId] = {
     "id": userId,
