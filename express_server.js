@@ -129,6 +129,9 @@ app.get("/urls", (req, res) => {
 
 app.get("/registration", (req, res) => {
   const userId = req.cookies["user_id"];
+  if (userId) {
+    res.redirect("/urls");
+  }
   let templateVars = {
     urls: urlDatabase,
     user: users[userId]
@@ -138,6 +141,9 @@ app.get("/registration", (req, res) => {
 
 app.get("/login", (req, res) => {
   const userId = req.cookies["user_id"];
+  if (userId) {
+    res.redirect("/urls");
+  }
   let templateVars = {
     urls: urlDatabase,
     user: users[userId]
