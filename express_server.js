@@ -96,8 +96,8 @@ app.post("/urls", (req, res) => {
   if (!userId) {
     res.status(403).send("Unregistered users are not permitted to shorten urls.");
   } else { const id = generateRandomString(6);
-  urlDatabase[id] = req.body.longURL;
-  res.redirect(`/urls/${id}`);
+    urlDatabase[id] = req.body.longURL;
+    res.redirect(`/urls/${id}`);
   }
 });
 
@@ -178,6 +178,9 @@ app.get("/urls/:id", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[(req.params.id)];
+  if (!longURL) {
+    res.status(404).send("This shortened URL does not exists in our database.");
+  }
   res.redirect(longURL);
 });
 
