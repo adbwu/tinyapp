@@ -36,6 +36,13 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+// user registration
+app.post("/register", (req, res) => {
+  res.clearCookie('username');
+  res.redirect("/urls");
+});
+
+
 // creates new shorted url and adds to db
 app.post("/urls", (req, res) => {
   const id = generateRandomString(6);
@@ -70,6 +77,14 @@ app.get("/urls", (req, res) => {
     username: req.cookies["username"],
   };
   res.render('urls_index', templateVars);
+});
+
+app.get("/register", (req, res) => {
+  let templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"],
+  };
+  res.render('register', templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
