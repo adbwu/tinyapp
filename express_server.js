@@ -35,12 +35,12 @@ const users = {
   },
 };
 
-// returns whether or not email already exists in usersDb
-const doesEmailExist = (email) => {
+// returns user or false if email doesn't exist in usersDb
+const getUserByEmail = (email) => {
   let usersArr = Object.entries(users);
   for (const user of usersArr) {
     if (user[1].email === email) {
-      return true;
+      return user;
     }
   }
   return false;
@@ -50,7 +50,20 @@ const doesEmailExist = (email) => {
 
 // logs user in
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  const email = req.body.email;
+  const password = req.body.password;
+  let checkAcc = getUserByEmail(email);
+  if (email === "" || password === "") {
+    res.status(400).send("Email or password field left blank. Please go back and try again");
+  } else if (doesEmailExist(email)) {
+    res.status(400).send("Email already exists. Please go back and try again");
+  }
+  users[userId] = {
+    "id": userId,
+    "email": email,
+    "password": password
+  };
+  res.cookie('user_id', userId);
   res.redirect("/urls");
 });
 
@@ -67,7 +80,7 @@ app.post("/register", (req, res) => {
   const userId = "user" + generateRandomString(6);
   if (email === "" || password === "") {
     res.status(400).send("Email or password field left blank. Please go back and try again");
-  } else if (doesEmailExist(email)) {
+  } else if (getUserByEmail(email) !== false) {
     res.status(400).send("Email already exists. Please go back and try again");
   }
   users[userId] = {
