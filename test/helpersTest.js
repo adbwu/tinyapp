@@ -60,8 +60,8 @@ describe('urlsForUser', function() {
   it('should return an object containing that user\'s URLs', function() {
     const userURLObj = urlsForUser("t53s32", testUrlDatabase);
     const expectedURLObj = {n5xCn3: "http://www.ytmnd.com",
-    c3km32: "http://www.staples.ca",
-    g4s23f: "http://www.rottentomatoes.com"
+      c3km32: "http://www.staples.ca",
+      g4s23f: "http://www.rottentomatoes.com"
     };
     assert.deepEqual(userURLObj, expectedURLObj);
   });
