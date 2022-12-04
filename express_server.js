@@ -77,7 +77,6 @@ const getUserByEmail = (email) => {
 const urlsForUser = (userId) => {
   let usersURLs = {};
   for (let url in urlDatabase) {
-    console.log(urlDatabase[url]["userID"]);
     if (urlDatabase[url]["userID"] === userId) {
       usersURLs[url] = urlDatabase[url]["longURL"];
     }
@@ -91,15 +90,17 @@ const urlsForUser = (userId) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  if (getUserByEmail(email) === false) {
+  if (!getUserByEmail(email)) {
     res.status(403).send("An account associated with that email does not exist. Please go back and try again.");
-  }
-  let checkAcc = getUserByEmail(email);
-  if (email === checkAcc.email && password === checkAcc.password) {
-    res.cookie('user_id', checkAcc.id);
-    res.redirect("/urls");
   } else {
-    res.status(403).send("Email and password do not match. Please go back and try again.");
+    let checkAcc = getUserByEmail(email);
+    console.log(checkAcc);
+    if (email === checkAcc.email && bcrypt.compareSync(password, checkAcc.password)) {
+      res.cookie('user_id', checkAcc.id);
+      res.redirect("/urls");
+    } else {
+      res.status(403).send("Email and password do not match. Please go back and try again.");
+    }
   }
 });
 
