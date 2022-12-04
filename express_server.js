@@ -70,21 +70,21 @@ const users = {
 };
 
 // returns user or false if email doesn't exist in usersDb
-const getUserByEmail = (email) => {
-  let usersArr = Object.entries(users);
+const getUserByEmail = (email, database) => {
+  let usersArr = Object.entries(database);
   for (const user of usersArr) {
     if (user[1].email === email) {
-      return users[user[0]];
+      return database[user[0]];
     }
   }
   return false;
 };
 
-const urlsForUser = (userId) => {
+const urlsForUser = (userId, database) => {
   let usersURLs = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url]["userID"] === userId) {
-      usersURLs[url] = urlDatabase[url]["longURL"];
+  for (let url in database) {
+    if (database[url]["userID"] === userId) {
+      usersURLs[url] = database[url]["longURL"];
     }
   }
   return usersURLs;
@@ -96,13 +96,13 @@ const urlsForUser = (userId) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  if (!getUserByEmail(email)) {
+  if (!getUserByEmail(email, users)) {
     res.status(403).send("An account associated with that email does not exist. Please go back and try again.");
   } else {
-    let checkAcc = getUserByEmail(email);
+    let checkAcc = getUserByEmail(email, users);
     console.log(checkAcc);
     if (email === checkAcc.email && bcrypt.compareSync(password, checkAcc.password)) {
-      res.session('user_id', checkAcc.id);
+      req.session.user_id = checkAcc.id;
       res.redirect("/urls");
     } else {
       res.status(403).send("Email and password do not match. Please go back and try again.");
@@ -112,7 +112,7 @@ app.post("/login", (req, res) => {
 
 // logs user out
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect("/login");
 });
 
@@ -123,7 +123,7 @@ app.post("/register", (req, res) => {
   const userId = "user" + generateRandomString(6);
   if (email === "" || password === "") {
     res.status(400).send("Email or password field left blank. Please go back and try again.");
-  } else if (getUserByEmail(email) !== false) {
+  } else if (getUserByEmail(email, users) !== false) {
     res.status(400).send("Email already exists. Please go back and try again.");
   }
   users[userId] = {
@@ -131,14 +131,14 @@ app.post("/register", (req, res) => {
     "email": email,
     "password": bcrypt.hashSync(password, 10)
   };
-  res.session('user_id', userId);
+  req.session.user_id = userId;
   res.redirect("/urls");
 });
 
 
 // creates new shorted url and adds to db
 app.post("/urls", (req, res) => {
-  const userId = req.sessions["user_id"];
+  const userId = req.session.user_id;
   if (!userId) {
     res.status(403).send("Unregistered users are not permitted to shorten urls.");
   } else {
@@ -150,9 +150,9 @@ app.post("/urls", (req, res) => {
 
 // edits an existing longURL
 app.post("/urls/:id/edit", (req, res) => {
-  const userId = req.sessions["user_id"];
+  const userId = req.session.user_id;
   const id = req.params.id;
-  const userURLS = urlsForUser(userId);
+  const userURLS = urlsForUser(userId, urlDatabase);
   if (!userId) {
     res.status(403).send("Unregistered users are not permitted to edit urls.");
   } else if (!urlDatabase[id]) {
@@ -167,9 +167,9 @@ app.post("/urls/:id/edit", (req, res) => {
 
 // deletes existing shortened url
 app.post("/urls/:id/delete", (req, res) => {
-  const userId = req.sessions["user_id"];
+  const userId = req.session.user_id;
   const id = req.params.id;
-  const userURLS = urlsForUser(userId);
+  const userURLS = urlsForUser(userId, urlDatabase);
   if (!userId) {
     res.status(403).send("Unregistered users are not permitted to delete urls.");
   } else if (!urlDatabase[id]) {
@@ -191,16 +191,16 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const userId = req.sessions["user_id"];
+  const userId = req.session.user_id;
   let templateVars = {
-    urls: urlsForUser(userId),
+    urls: urlsForUser(userId, urlDatabase),
     user: users[userId]
   };
   res.render('urls_index', templateVars);
 });
 
 app.get("/registration", (req, res) => {
-  const userId = req.sessions["user_id"];
+  const userId = req.session.user_id;
   if (userId) {
     res.redirect("/urls");
   }
@@ -212,7 +212,7 @@ app.get("/registration", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const userId = req.sessions["user_id"];
+  const userId = req.session.user_id;
   if (userId) {
     res.redirect("/urls");
   }
@@ -224,7 +224,7 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const userId = req.sessions["user_id"];
+  const userId = req.session.user_id;
   if (!userId) {
     res.redirect("/login");
   }
@@ -235,9 +235,9 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const userId = req.sessions["user_id"];
+  const userId = req.session.user_id;
   let message;
-  if (!req.sessions["user_id"]) {
+  if (!req.session.user_id) {
     message = "loggedout";
   }
   if (urlDatabase[req.params.id]["userID"] !== userId) {
