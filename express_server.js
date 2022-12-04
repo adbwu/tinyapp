@@ -1,7 +1,7 @@
 const express = require("express");
 const cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
-const { getUserByEmail, urlsForUser } = require('./helpFunctions');
+const { getUserByEmail, urlsForUser } = require('./helpers');
 const app = express();
 const PORT = 8080;
 
@@ -76,7 +76,7 @@ const users = {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  if (!getUserByEmail(email, users)) {
+  if (getUserByEmail(email, users) === undefined) {
     res.status(403).send("An account associated with that email does not exist. Please go back and try again.");
   } else {
     let checkAcc = getUserByEmail(email, users);
@@ -103,7 +103,7 @@ app.post("/register", (req, res) => {
   const userId = "user" + generateRandomString(6);
   if (email === "" || password === "") {
     res.status(400).send("Email or password field left blank. Please go back and try again.");
-  } else if (getUserByEmail(email, users) !== false) {
+  } else if (getUserByEmail(email, users) !== undefined) {
     res.status(400).send("Email already exists. Please go back and try again.");
   }
   users[userId] = {

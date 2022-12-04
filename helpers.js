@@ -6,7 +6,7 @@ const getUserByEmail = (email, database) => {
       return database[user[0]];
     }
   }
-  return false;
+  return undefined;
 };
 
 //creates an object of urls only belonging to user
