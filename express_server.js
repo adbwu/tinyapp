@@ -18,8 +18,30 @@ const generateRandomString = (num) => {
 };
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID:"userRandomID"
+  },
+  "9sm5xK" : {
+    longURL: "http://www.google.com",
+    userID: "user2RandomID"
+  },
+  "n5xCn3": {
+    longURL: "http://www.ytmnd.com",
+    userID:"t53s32"
+  },
+  "M5Th3s" : {
+    longURL: "http://www.zombo.com",
+    userID: "user2RandomID"
+  },
+  "c3km32": {
+    longURL: "http://www.staples.ca",
+    userID:"t53s32"
+  },
+  "g4s23f" : {
+    longURL: "http://www.rottentomatoes.com",
+    userID: "t53s32"
+  }
 };
 
 const users = {
@@ -33,6 +55,11 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk",
   },
+  t53s32: {
+    id: "t53s32",
+    email: "fake@fake.com",
+    password: "password",
+  }
 };
 
 // returns user or false if email doesn't exist in usersDb
@@ -44,6 +71,17 @@ const getUserByEmail = (email) => {
     }
   }
   return false;
+};
+
+const urlsForUser = (userId) => {
+  let usersURLs = {};
+  for (let url in urlDatabase) {
+    console.log(urlDatabase[url]["userID"]);
+    if (urlDatabase[url]["userID"] === userId) {
+      usersURLs[url] = urlDatabase[url]["longURL"];
+    }
+  }
+  return usersURLs;
 };
 
 // POSTS ---------------------------------------------
@@ -95,23 +133,45 @@ app.post("/urls", (req, res) => {
   const userId = req.cookies["user_id"];
   if (!userId) {
     res.status(403).send("Unregistered users are not permitted to shorten urls.");
-  } else { const id = generateRandomString(6);
-    urlDatabase[id] = req.body.longURL;
+  } else {
+    const id = generateRandomString(6);
+    urlDatabase[id] = { "longURL" : req.body.longURL, "userID" : userId };
     res.redirect(`/urls/${id}`);
   }
 });
 
 // edits an existing longURL
 app.post("/urls/:id/edit", (req, res) => {
+  const userId = req.cookies["user_id"];
   const id = req.params.id;
-  urlDatabase[id] = req.body.longURL;
-  res.redirect(`/urls/${id}`);
+  const userURLS = urlsForUser(userId);
+  if (!userId) {
+    res.status(403).send("Unregistered users are not permitted to delete urls.");
+  } else if (!urlDatabase[id]) {
+    res.status(403).send("There is no entry for the corresponding TinyURL.");
+  } else if (!userURLS[id]) {
+    res.status(403).send("This TinyURL does not belong to you.");
+  } else {
+    urlDatabase[id] = req.body.urlDatabase[id].longURL;
+    res.redirect(`/urls/${id}`);
+  }
 });
 
 // deletes existing shortened url
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[(req.params.id)];
-  res.redirect("/urls");
+  const userId = req.cookies["user_id"];
+  const id = req.params.id;
+  const userURLS = urlsForUser(userId);
+  if (!userId) {
+    res.status(403).send("Unregistered users are not permitted to delete urls.");
+  } else if (!urlDatabase[id]) {
+    res.status(403).send("There is no entry for the corresponding TinyURL.");
+  } else if (!userURLS[id]) {
+    res.status(403).send("This TinyURL does not belong to you.");
+  } else {
+    delete urlDatabase[(req.params.id)];
+    res.redirect("/urls");
+  }
 });
 
 
@@ -125,7 +185,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.cookies["user_id"];
   let templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(userId),
     user: users[userId]
   };
   res.render('urls_index', templateVars);
@@ -168,16 +228,24 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const userId = req.cookies["user_id"];
+  let message;
+  if (!req.cookies["user_id"]) {
+    message = "loggedout";
+  }
+  if (urlDatabase[req.params.id]["userID"] !== userId) {
+    message = "notbelong";
+  }
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[(req.params.id)],
-    user: users[userId]
+    longURL: urlDatabase[(req.params.id)]["longURL"],
+    user: users[userId],
+    message: message
   };
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[(req.params.id)];
+  const longURL = urlDatabase[(req.params.id)].longURL;
   if (!longURL) {
     res.status(404).send("This shortened URL does not exists in our database.");
   }

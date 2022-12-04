@@ -18,28 +18,33 @@
   </head>
   <body>
     <header><%- include('partials/_header'); %></header>
-    <main style="margin: 1em;">
       <h3>My URLs</h3>
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Short URL ID</th>
-            <th scope="col">Long URL</th>
-            <th scope="col">Edit</th>
-            <th scope="col">Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% for (let id in urls) { %>
+      <% if (user) { %>
+        <table class="table">
+          <thead>
             <tr>
-              <td><%= id %></td>
-              <td><%= urls[id] %></td>
-              <td><a href="/urls/<%= id %>/"><button type="submit" class="btn btn-outline-warning">Edit</button></a></td>
-              <td><form method="POST" action="/urls/<%= id %>/delete"><button type="submit" class="btn btn-outline-danger">Delete</button></form></td>
+              <th scope="col">Short URL ID</th>
+              <th scope="col">Long URL</th>
+              <th scope="col">Edit</th>
+              <th scope="col">Delete</th>
             </tr>
-          <% } %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+              <% for (let id in urls) { %>
+                <tr>
+                  <td><%= id %></td>
+                  <td><%= urls[id] %></td>
+                  <td><a href="/urls/<%= id %>/"><button type="submit" class="btn btn-outline-warning">Edit</button></a></td>
+                  <td><form method="POST" action="/urls/<%= id %>/delete"><button type="submit" class="btn btn-outline-danger">Delete</button></form></td>
+                </tr>
+              <% } %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <div class="alert alert-warning" role="alert">
+          URLs only visible to logged in users. Please <a href="/login">Login</a> or <a href="/registration">Register</a>.
+        </div>
+      <% } %>
     </main>
     <!-- Bootstrap JS -->
     <script
