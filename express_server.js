@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
+const { getUserByEmail, urlsForUser } = require('./helpFunctions');
 const app = express();
 const PORT = 8080;
 
@@ -67,27 +68,6 @@ const users = {
     email: "fake@fake.com",
     password: "password",
   }
-};
-
-// returns user or false if email doesn't exist in usersDb
-const getUserByEmail = (email, database) => {
-  let usersArr = Object.entries(database);
-  for (const user of usersArr) {
-    if (user[1].email === email) {
-      return database[user[0]];
-    }
-  }
-  return false;
-};
-
-const urlsForUser = (userId, database) => {
-  let usersURLs = {};
-  for (let url in database) {
-    if (database[url]["userID"] === userId) {
-      usersURLs[url] = database[url]["longURL"];
-    }
-  }
-  return usersURLs;
 };
 
 // POSTS ---------------------------------------------
