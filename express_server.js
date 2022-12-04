@@ -146,7 +146,7 @@ app.post("/urls/:id/edit", (req, res) => {
   const id = req.params.id;
   const userURLS = urlsForUser(userId);
   if (!userId) {
-    res.status(403).send("Unregistered users are not permitted to delete urls.");
+    res.status(403).send("Unregistered users are not permitted to edit urls.");
   } else if (!urlDatabase[id]) {
     res.status(403).send("There is no entry for the corresponding TinyURL.");
   } else if (!userURLS[id]) {
