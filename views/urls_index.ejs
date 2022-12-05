@@ -14,10 +14,12 @@
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
     <title>TinyApp</title>
   </head>
   <body>
     <header><%- include('partials/_header'); %></header>
+    <main style="margin: 1em;">
       <h3>My URLs</h3>
       <% if (user) { %>
         <% if (message === "loggedIn") {%>
@@ -44,8 +46,8 @@
                 <tr>
                   <td><%= id %></td>
                   <td><%= urls[id] %></td>
-                  <td><a href="/urls/<%= id %>/"><button type="submit" class="btn btn-outline-warning">Edit</button></a></td>
-                  <td><form method="POST" action="/urls/<%= id %>/delete"><button type="submit" class="btn btn-outline-danger">Delete</button></form></td>
+                  <td><a href="/urls/<%= id %>/"><button type="submit" class="btn btn-outline-warning"><i class="bi bi-pencil-fill" ></i></button></a></td>
+                  <td><form method="POST" action="/urls/<%= id %>/delete"><button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash-fill"></i></button></form></td>
                 </tr>
               <% } %>
           </tbody>
