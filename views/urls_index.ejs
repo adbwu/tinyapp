@@ -20,6 +20,16 @@
     <header><%- include('partials/_header'); %></header>
       <h3>My URLs</h3>
       <% if (user) { %>
+        <% if (message === "loggedIn") {%>
+          <div class="alert alert-success" role="alert">
+            You've been logged in! Welcome back to TinyApp!
+          </div>
+        <% } %>
+        <% if (message === "newUser") {%>
+          <div class="alert alert-success" role="alert">
+            You've been successfully registered as <b><%= user.email %></b>! Welcome to TinyApp!
+          </div>
+        <% } %>
         <table class="table">
           <thead>
             <tr>

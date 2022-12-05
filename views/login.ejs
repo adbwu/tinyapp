@@ -20,6 +20,11 @@
     <header><%- include('partials/_header'); %></header>
     <main style="margin: 1em;">
       <h3>Login</h3>
+      <% if (message === "loggedOut") {%>
+        <div class="alert alert-success" role="alert">
+          You've been logged out! Thank you for using TinyApp!
+        </div>
+      <% } %>
       <form action="/login" method="POST">
         <div class="form-row">
           <div class="form-group col-md-6">

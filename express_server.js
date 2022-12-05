@@ -80,10 +80,15 @@ app.post("/login", (req, res) => {
     res.status(403).send("An account associated with that email does not exist. Please go back and try again.");
   } else {
     let checkAcc = getUserByEmail(email, users);
-    console.log(checkAcc);
     if (email === checkAcc.email && bcrypt.compareSync(password, checkAcc.password)) {
       req.session.userIdCookie = checkAcc.id;
-      res.redirect("/urls");
+      const userId = req.session.userIdCookie;
+      let templateVars = {
+        urls: urlsForUser(userId, urlDatabase),
+        user: users[userId],
+        message: "loggedIn"
+      };
+      res.render('urls_index', templateVars);
     } else {
       res.status(403).send("Email and password do not match. Please go back and try again.");
     }
@@ -93,7 +98,13 @@ app.post("/login", (req, res) => {
 // logs user out
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect("/login");
+  const userId = "";
+  let templateVars = {
+    urls: urlDatabase,
+    user: users[userId],
+    message: "loggedOut"
+  };
+  res.render('login', templateVars);
 });
 
 // user registration
@@ -112,18 +123,25 @@ app.post("/register", (req, res) => {
     "password": bcrypt.hashSync(password, 10)
   };
   req.session.userIdCookie = userId;
-  res.redirect("/urls");
+  const encryptUserId = req.session.userIdCookie;
+  let templateVars = {
+    urls: urlsForUser(encryptUserId, urlDatabase),
+    user: users[encryptUserId],
+    message: "newUser"
+  };
+  res.render('urls_index', templateVars);
 });
 
 
 // creates new shorted url and adds to db
 app.post("/urls", (req, res) => {
+  const longURL = req.body.longURL;
   const userId = req.session.userIdCookie;
   if (!userId) {
     res.status(403).send("Unregistered users are not permitted to shorten urls.");
   } else {
     const id = generateRandomString(6);
-    urlDatabase[id] = { "longURL" : req.body.longURL, "userID" : userId };
+    urlDatabase[id] = { "longURL" : longURL, "userID" : userId };
     res.redirect(`/urls/${id}`);
   }
 });
@@ -133,16 +151,25 @@ app.post("/urls/:id/edit", (req, res) => {
   const userId = req.session.userIdCookie;
   const id = req.params.id;
   const userURLS = urlsForUser(userId, urlDatabase);
+  const longURL = req.body.longURL;
+  let message;
   if (!userId) {
-    res.status(403).send("Unregistered users are not permitted to edit urls.");
+    message = "loggedOut";
   } else if (!urlDatabase[id]) {
     res.status(403).send("There is no entry for the corresponding TinyURL.");
   } else if (!userURLS[id]) {
-    res.status(403).send("This TinyURL does not belong to you.");
+    message = "notBelong";
   } else {
-    urlDatabase[id] = req.body.urlDatabase[id].longURL;
-    res.redirect(`/urls/${id}`);
+    urlDatabase[id].longURL = longURL;
+    message = "edited";
   }
+  const templateVars = {
+    id: req.params.id,
+    longURL: longURL,
+    user: users[userId],
+    message: message
+  };
+  res.render("urls_show", templateVars);
 });
 
 // deletes existing shortened url
@@ -172,9 +199,11 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userId = req.session.userIdCookie;
+  let message = "";
   let templateVars = {
     urls: urlsForUser(userId, urlDatabase),
-    user: users[userId]
+    user: users[userId],
+    message: message
   };
   res.render('urls_index', templateVars);
 });
@@ -198,7 +227,8 @@ app.get("/login", (req, res) => {
   }
   let templateVars = {
     urls: urlDatabase,
-    user: users[userId]
+    user: users[userId],
+    message: ''
   };
   res.render('login', templateVars);
 });
@@ -216,25 +246,29 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const userId = req.session.userIdCookie;
+  const id = req.params.id;
+  const userURLS = urlsForUser(userId, urlDatabase);
   let message;
-  if (!req.session.userIdCookie) {
-    message = "loggedout";
+  if (!userId) {
+    res.status(403).send("Unregistered users are not permitted to view individual TinyURL pages.");
+  } else if (!urlDatabase[id]) {
+    res.status(403).send("There is no entry for the corresponding TinyURL.");
+  } else if (!userURLS[id]) {
+    res.status(403).send("The TinyURL page you requested does not belong to you.");
+  } else {
+    const templateVars = {
+      id: req.params.id,
+      longURL: urlDatabase[(req.params.id)]["longURL"],
+      user: users[userId],
+      message: message
+    };
+    res.render("urls_show", templateVars);
   }
-  if (urlDatabase[req.params.id]["userID"] !== userId) {
-    message = "notbelong";
-  }
-  const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase[(req.params.id)]["longURL"],
-    user: users[userId],
-    message: message
-  };
-  res.render("urls_show", templateVars);
 });
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[(req.params.id)].longURL;
-  if (!longURL) {
+  if (longURL === undefined) {
     res.status(404).send("This shortened URL does not exists in our database.");
   }
   res.redirect(longURL);

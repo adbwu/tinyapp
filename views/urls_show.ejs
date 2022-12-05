@@ -13,15 +13,20 @@
   <body>
     <header><%- include('partials/_header'); %></header>
     <main style="margin: 1em;">
-      <% if (message === "loggedout") {%>
+      <% if (message === "loggedOut") {%>
         <div class="alert alert-warning" role="alert">
           Individaul TinyURL pages only visible to logged in users. Please <a href="/login">Login</a> or <a href="/registration">Register</a>.
         </div>
-      <% } else if (message === "notbelong") {%>
+      <% } else if (message === "notBelong") {%>
         <div class="alert alert-warning" role="alert">
           This TinyURL does not belong to you. You can <a href="/urls">view all your TinyURLs</a> or <a href="/urls/new">create a new one</a>.
         </div>
-      <% } else {%>
+      <% } else { %>
+       <% if (message === "edited") {%>
+        <div class="alert alert-success" role="alert">
+          This TinyURL has been edited to redirect to <%= longURL %>!
+        </div>
+        <% } %>
         <div class="card text-center" >
           <div class="card-header"></div>
           <div class="card-body">
