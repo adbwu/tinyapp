@@ -1,4 +1,4 @@
-// returns user or false if email doesn't exist in usersDb
+// returns user or undefined if email doesn't exist in usersDb
 const getUserByEmail = (email, database) => {
   let usersArr = Object.entries(database);
   for (const user of usersArr) {

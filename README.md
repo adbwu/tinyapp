@@ -4,9 +4,16 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
+##### Registering to use TinyApp
 !["Registering to use TinyApp"](https://github.com/adbwu/tinyapp/blob/main/docs/register.gif?raw=true)
+
+##### ##### Creating a TinyURL and editing it
 !["Creating a TinyURL and editing it"](https://github.com/adbwu/tinyapp/blob/main/docs/createediturl.gif?raw=true)
+
+##### Deleting a URL and visiting the redirect
 !["Deleting a URL and visiting the redirect"](https://github.com/adbwu/tinyapp/blob/main/docs/deleteandhyper.gif?raw=true)
+
+##### Logging out and back in to TinyApp
 !["Logging out and back in to TinyApp"](https://github.com/adbwu/tinyapp/blob/main/docs/logoutlogin.gif?raw=true)
 
 ## Dependencies
